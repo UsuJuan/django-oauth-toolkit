@@ -1,10 +1,11 @@
 from __future__ import absolute_import, unicode_literals
 
+from django.core.urlresolvers import reverse_lazy
 from django.views.generic import ListView, DeleteView
+
 from braces.views import LoginRequiredMixin
 
-from ..compat import reverse_lazy
-from ..models import AccessToken
+from ..models import AccessToken, Application
 
 
 class AuthorizedTokensListView(LoginRequiredMixin, ListView):
@@ -19,8 +20,11 @@ class AuthorizedTokensListView(LoginRequiredMixin, ListView):
         """
         Show only user's tokens
         """
-        return super(AuthorizedTokensListView, self).get_queryset()\
-            .select_related('application').filter(user=self.request.user)
+        try:
+            application = Application.objects.get(user=self.request.user)
+            return super(AuthorizedTokensListView, self).get_queryset().filter(application=application)
+        except Application.DoesNotExist:
+            return super(AuthorizedTokensListView, self).get_queryset()
 
 
 class AuthorizedTokenDeleteView(LoginRequiredMixin, DeleteView):

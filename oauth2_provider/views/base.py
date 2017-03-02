@@ -8,7 +8,6 @@ from django.utils.decorators import method_decorator
 
 from braces.views import LoginRequiredMixin, CsrfExemptMixin
 
-from ..scopes import get_scopes_backend
 from ..settings import oauth2_settings
 from ..exceptions import OAuthToolkitError
 from ..forms import AllowForm
@@ -49,7 +48,7 @@ class BaseAuthorizationView(LoginRequiredMixin, OAuthLibMixin, View):
 
 class AuthorizationView(BaseAuthorizationView, FormView):
     """
-    Implements an endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the
+    Implements and endpoint to handle *Authorization Requests* as in :rfc:`4.1.1` and prompting the
     user with a form to determine if she authorizes the client application to access her data.
     This endpoint is reached two times during the authorization process:
     * first receive a ``GET`` request from user asking authorization for a certain client
@@ -59,11 +58,11 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     * then receive a ``POST`` request possibly after user authorized the access
 
     Some informations contained in the ``GET`` request and needed to create a Grant token during
-    the ``POST`` request would be lost between the two steps above, so they are temporarily stored in
+    the ``POST`` request would be lost between the two steps above, so they are temporary stored in
     hidden fields on the form.
     A possible alternative could be keeping such informations in the session.
 
-    The endpoint is used in the following flows:
+    The endpoint is used in the followin flows:
     * Authorization code
     * Implicit grant
     """
@@ -111,17 +110,12 @@ class AuthorizationView(BaseAuthorizationView, FormView):
     def get(self, request, *args, **kwargs):
         try:
             scopes, credentials = self.validate_authorization_request(request)
-            all_scopes = get_scopes_backend().get_all_scopes()
-            kwargs["scopes_descriptions"] = [all_scopes[scope] for scope in scopes]
+            kwargs['scopes_descriptions'] = [oauth2_settings.SCOPES[scope] for scope in scopes]
             kwargs['scopes'] = scopes
             # at this point we know an Application instance with such client_id exists in the database
             application = get_application_model().objects.get(client_id=credentials['client_id'])  # TODO: cache it!
             kwargs['application'] = application
-            kwargs['client_id'] = credentials['client_id']
-            kwargs['redirect_uri'] = credentials['redirect_uri']
-            kwargs['response_type'] = credentials['response_type']
-            kwargs['state'] = credentials['state']
-
+            kwargs.update(credentials)
             self.oauth2_data = kwargs
             # following two loc are here only because of https://code.djangoproject.com/ticket/17795
             form = self.get_form(self.get_form_class())

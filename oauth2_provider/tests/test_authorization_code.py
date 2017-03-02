@@ -3,12 +3,14 @@ from __future__ import unicode_literals
 import base64
 import json
 import datetime
+import mock
 
 from django.contrib.auth import get_user_model
+from django.core.urlresolvers import reverse
 from django.test import TestCase, RequestFactory
 from django.utils import timezone
 
-from ..compat import parse_qs, reverse, urlparse, urlencode
+from ..compat import urlparse, parse_qs, urlencode
 from ..models import get_application_model, Grant, AccessToken, RefreshToken
 from ..settings import oauth2_settings
 from ..views import ProtectedResourceView
@@ -50,28 +52,6 @@ class BaseTest(TestCaseUtils, TestCase):
         self.application.delete()
         self.test_user.delete()
         self.dev_user.delete()
-
-
-class TestRegressionIssue315(BaseTest):
-    """
-    Test to avoid regression for the issue 315: request object
-    was being reassigned when getting AuthorizationView
-    """
-
-    def test_request_is_not_overwritten(self):
-        self.client.login(username="test_user", password="123456")
-        query_string = urlencode({
-            'client_id': self.application.client_id,
-            'response_type': 'code',
-            'state': 'random_state_string',
-            'scope': 'read write',
-            'redirect_uri': 'http://example.it',
-        })
-        url = "{url}?{qs}".format(url=reverse('oauth2_provider:authorize'), qs=query_string)
-
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        assert 'request' not in response.context_data
 
 
 class TestAuthorizationCodeView(BaseTest):
@@ -705,14 +685,13 @@ class TestAuthorizationCodeTokenView(BaseTest):
             'refresh_token': content['refresh_token'],
             'scope': content['scope'],
         }
-        oauth2_settings.ROTATE_REFRESH_TOKEN = False
 
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 200)
-        response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
-        self.assertEqual(response.status_code, 200)
-
-        oauth2_settings.ROTATE_REFRESH_TOKEN = True
+        with mock.patch('oauthlib.oauth2.rfc6749.request_validator.RequestValidator.rotate_refresh_token',
+                        return_value=False):
+            response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+            self.assertEqual(response.status_code, 200)
+            response = self.client.post(reverse('oauth2_provider:token'), data=token_request_data, **auth_headers)
+            self.assertEqual(response.status_code, 200)
 
     def test_basic_auth_bad_authcode(self):
         """
@@ -1056,4 +1035,3 @@ class TestDefaultScopes(BaseTest):
         self.assertEqual(form['state'].value(), "random_state_string")
         self.assertEqual(form['scope'].value(), 'read')
         self.assertEqual(form['client_id'].value(), self.application.client_id)
-        oauth2_settings._DEFAULT_SCOPES = ['read', 'write']

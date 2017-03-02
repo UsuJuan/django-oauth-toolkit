@@ -34,7 +34,7 @@ URL this view will respond to:
 
 .. code-block:: python
 
-    from django.conf.urls import url, include
+    from django.conf.urls import patterns, url
     import oauth2_provider.views as oauth2_views
     from django.conf import settings
     from .views import ApiEndpoint
@@ -66,6 +66,8 @@ URL this view will respond to:
     urlpatterns = [
         # OAuth 2 endpoints:
         url(r'^o/', include(oauth2_endpoint_views, namespace="oauth2_provider")),
+
+        url(r'^admin/', include(admin.site.urls)),
         url(r'^api/hello', ApiEndpoint.as_view()),  # an example resource endpoint
     ]
 

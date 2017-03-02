@@ -32,14 +32,6 @@ The number of seconds an access token remains valid. Requesting a protected
 resource after this duration will fail. Keep this value high enough so clients
 can cache the token for a reasonable amount of time.
 
-ALLOWED_REDIRECT_URI_SCHEMES
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Default: ``["http", "https"]``
-
-A list of schemes that the ``redirect_uri`` field will be validated against.
-Setting this to ``["https"]`` only in production is strongly recommended.
-
 APPLICATION_MODEL
 ~~~~~~~~~~~~~~~~~
 The import string of the class (model) representing your applications. Overwrite
@@ -68,7 +60,7 @@ The length of the generated secrets, in characters. If this value is too low,
 secrets may become subject to bruteforce guessing.
 
 OAUTH2_SERVER_CLASS
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~
 The import string for the ``server_class`` (or ``oauthlib.oauth2.Server`` subclass)
 used in the ``OAuthLibMixin`` that implements OAuth2 grant types.
 
@@ -82,53 +74,34 @@ OAUTH2_BACKEND_CLASS
 The import string for the ``oauthlib_backend_class`` used in the ``OAuthLibMixin``,
 to get a ``Server`` instance.
 
-REFRESH_TOKEN_EXPIRE_SECONDS
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-The number of seconds before a refresh token gets removed from the database by
-the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
-
-ROTATE_REFRESH_TOKEN
-~~~~~~~~~~~~~~~~~~~~
-When is set to `True` (default) a new refresh token is issued to the client when the client refreshes an access token.
-
-REQUEST_APPROVAL_PROMPT
-~~~~~~~~~~~~~~~~~~~~~~~
-Can be ``'force'`` or ``'auto'``.
-The strategy used to display the authorization form. Refer to :ref:`skip-auth-form`.
-
-SCOPES_BACKEND_CLASS
-~~~~~~~~~~~~~~~~~~~~
-**New in 0.12.0**. The import string for the scopes backend class.
-Defaults to , which reads scopes through the settings defined below.
-
 SCOPES
 ~~~~~~
-.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
-
 A dictionary mapping each scope name to its human description.
-
-.. _settings_default_scopes:
 
 DEFAULT_SCOPES
 ~~~~~~~~~~~~~~
-.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
-
 A list of scopes that should be returned by default.
 This is a subset of the keys of the SCOPES setting.
 By default this is set to '__all__' meaning that the whole set of SCOPES will be returned.
-
 .. code-block:: python
 
   DEFAULT_SCOPES = ['read', 'write']
 
 READ_SCOPE
 ~~~~~~~~~~
-.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
-
 The name of the *read* scope.
 
 WRITE_SCOPE
 ~~~~~~~~~~~
-.. note:: (0.12.0+) Only used if `SCOPES_BACKEND_CLASS` is set to the SettingsScopes default.
-
 The name of the *write* scope.
+
+REFRESH_TOKEN_EXPIRE_SECONDS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The number of seconds before a refresh token gets removed from the database by
+the ``cleartokens`` management command. Check :ref:`cleartokens` management command for further info.
+
+REQUEST_APPROVAL_PROMPT
+~~~~~~~~~~~~~~~~~~~~~~~
+Can be ``'force'`` or ``'auto'``.
+The strategy used to display the authorization form. Refer to :ref:`skip-auth-form`.
+

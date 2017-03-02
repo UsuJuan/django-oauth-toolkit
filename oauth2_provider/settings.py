@@ -17,12 +17,15 @@ back to the defaults.
 """
 from __future__ import unicode_literals
 
-import importlib
 import six
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-
+try:
+    # Available in Python 2.7+
+    import importlib
+except ImportError:
+    from django.utils import importlib
 
 USER_SETTINGS = getattr(settings, 'OAUTH2_PROVIDER', None)
 
@@ -35,13 +38,11 @@ DEFAULTS = {
     'OAUTH2_BACKEND_CLASS': 'oauth2_provider.oauth2_backends.OAuthLibCore',
     'SCOPES': {"read": "Reading scope", "write": "Writing scope"},
     'DEFAULT_SCOPES': ['__all__'],
-    'SCOPES_BACKEND_CLASS': 'oauth2_provider.scopes.SettingsScopes',
     'READ_SCOPE': 'read',
     'WRITE_SCOPE': 'write',
     'AUTHORIZATION_CODE_EXPIRE_SECONDS': 60,
     'ACCESS_TOKEN_EXPIRE_SECONDS': 36000,
     'REFRESH_TOKEN_EXPIRE_SECONDS': None,
-    'ROTATE_REFRESH_TOKEN': True,
     'APPLICATION_MODEL': getattr(settings, 'OAUTH2_PROVIDER_APPLICATION_MODEL', 'oauth2_provider.Application'),
     'REQUEST_APPROVAL_PROMPT': 'force',
     'ALLOWED_REDIRECT_URI_SCHEMES': ['http', 'https'],
@@ -69,7 +70,6 @@ IMPORT_STRINGS = (
     'OAUTH2_SERVER_CLASS',
     'OAUTH2_VALIDATOR_CLASS',
     'OAUTH2_BACKEND_CLASS',
-    'SCOPES_BACKEND_CLASS',
 )
 
 

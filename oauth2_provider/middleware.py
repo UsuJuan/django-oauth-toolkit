@@ -1,9 +1,8 @@
 from django.contrib.auth import authenticate
 from django.utils.cache import patch_vary_headers
-from .compat import MiddlewareMixin
 
 
-class OAuth2TokenMiddleware(MiddlewareMixin):
+class OAuth2TokenMiddleware(object):
     """
     Middleware for OAuth2 user authentication
 

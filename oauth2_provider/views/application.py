@@ -1,9 +1,14 @@
-from django.forms.models import modelform_factory
-from django.views.generic import CreateView, DetailView, DeleteView, ListView, UpdateView
+from django.core.urlresolvers import reverse_lazy
+# from django.forms.models import modelform_factory
+# from django.views.generic import CreateView, DetailView, DeleteView, ListView, UpdateView
+from django_mongoengine.views import CreateView, DetailView, DeleteView, ListView, UpdateView
+from django_mongoengine.forms import DocumentForm
+from django_mongoengine.forms.documents import documentform_factory
+
+from django.conf import settings
+from django.utils.module_loading import import_string
 
 from braces.views import LoginRequiredMixin
-
-from ..compat import reverse_lazy
 from ..models import get_application_model
 
 
@@ -14,7 +19,7 @@ class ApplicationOwnerIsUserMixin(LoginRequiredMixin):
     fields = '__all__'
 
     def get_queryset(self):
-        return get_application_model().objects.filter(user=self.request.user)
+        return get_application_model().objects()
 
 
 class ApplicationRegistration(LoginRequiredMixin, CreateView):
@@ -27,14 +32,17 @@ class ApplicationRegistration(LoginRequiredMixin, CreateView):
         """
         Returns the form class for the application model
         """
-        return modelform_factory(
+        # return ApplicationForm
+        return documentform_factory(
             get_application_model(),
             fields=('name', 'client_id', 'client_secret', 'client_type',
                     'authorization_grant_type', 'redirect_uris')
         )
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
+        auth_user_model = settings.MONGOENGINE_USER_DOCUMENT
+        User = import_string(auth_user_model)
+        form.instance.user = User.objects.get(id=self.request.user.id)
         return super(ApplicationRegistration, self).form_valid(form)
 
 
@@ -67,15 +75,7 @@ class ApplicationUpdate(ApplicationOwnerIsUserMixin, UpdateView):
     """
     View used to update an application owned by the request.user
     """
+    fields = ('client_id', 'client_secret', 'client_type', 
+              'authorization_grant_type', 'name', 'redirect_uris')
     context_object_name = 'application'
     template_name = "oauth2_provider/application_form.html"
-
-    def get_form_class(self):
-        """
-        Returns the form class for the application model
-        """
-        return modelform_factory(
-            get_application_model(),
-            fields=('name', 'client_id', 'client_secret', 'client_type',
-                    'authorization_grant_type', 'redirect_uris')
-        )

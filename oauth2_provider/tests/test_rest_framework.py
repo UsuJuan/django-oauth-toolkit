@@ -1,11 +1,10 @@
 import unittest
 from datetime import timedelta
 
-from django.conf.urls import url, include
+from django.conf.urls import patterns, url, include
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from django.test import TestCase
-from django.test.utils import override_settings
 from django.utils import timezone
 
 from .test_utils import TestCaseUtils
@@ -51,14 +50,15 @@ try:
         permission_classes = [permissions.IsAuthenticated, TokenHasResourceScope]
         required_scopes = ['resource1']
 
-    urlpatterns = [
+    urlpatterns = patterns(
+        '',
         url(r'^oauth2/', include('oauth2_provider.urls')),
         url(r'^oauth2-test/$', OAuth2View.as_view()),
         url(r'^oauth2-scoped-test/$', ScopedView.as_view()),
         url(r'^oauth2-read-write-test/$', ReadWriteScopedView.as_view()),
         url(r'^oauth2-resource-scoped-test/$', ResourceScopedView.as_view()),
         url(r'^oauth2-authenticated-or-scoped-test/$', AuthenticatedOrScopedView.as_view()),
-    ]
+    )
 
     rest_framework_installed = True
 except ImportError:
@@ -72,8 +72,9 @@ class BaseTest(TestCaseUtils, TestCase):
     pass
 
 
-@override_settings(ROOT_URLCONF=__name__)
 class TestOAuth2Authentication(BaseTest):
+    urls = 'oauth2_provider.tests.test_rest_framework'
+
     def setUp(self):
         oauth2_settings._SCOPES = ['read', 'write', 'scope1', 'scope2', 'resource1']
 
@@ -95,9 +96,6 @@ class TestOAuth2Authentication(BaseTest):
             token='secret-access-token-key',
             application=self.application
         )
-
-    def tearDown(self):
-        oauth2_settings._SCOPES = ['read', 'write']
 
     def _create_authorization_header(self, token):
         return "Bearer {0}".format(token)

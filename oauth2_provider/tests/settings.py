@@ -1,3 +1,6 @@
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
 ADMINS = ()
 
 MANAGERS = ADMINS
@@ -37,37 +40,22 @@ STATICFILES_FINDERS = (
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = "1234567890evonove"
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'debug': True,
-            'context_processors': [
-                'django.contrib.auth.context_processors.auth',
-                'django.template.context_processors.debug',
-                'django.template.context_processors.i18n',
-                'django.template.context_processors.media',
-                'django.template.context_processors.static',
-                'django.template.context_processors.tz',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
+TEMPLATE_LOADERS = (
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+)
 
-MIDDLEWARE = (
+MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 )
-# Django < 1.10 compatibility
-MIDDLEWARE_CLASSES = MIDDLEWARE
 
 ROOT_URLCONF = 'oauth2_provider.tests.urls'
+
+TEMPLATE_DIRS = ()
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -110,7 +98,7 @@ LOGGING = {
         },
         'null': {
             'level': 'DEBUG',
-            'class': 'logging.NullHandler',
+            'class': 'oauth2_provider.compat_handlers.NullHandler',
         },
     },
     'loggers': {
@@ -125,4 +113,8 @@ LOGGING = {
             'propagate': True,
         },
     }
+}
+
+OAUTH2_PROVIDER = {
+    '_SCOPES': ['example']
 }
