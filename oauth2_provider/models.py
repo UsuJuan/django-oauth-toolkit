@@ -263,7 +263,7 @@ class RefreshToken(Document):
     * :attr:`access_token` AccessToken instance this refresh token is
                            bounded to
     """
-    user = fields.ReferenceField(settings.MONGOENGINE_USER_DOCUMENT, dbref=True)
+    user = fields.ReferenceField(settings.MONGOENGINE_USER_DOCUMENT, dbref=True, blank=True)
     token = fields.StringField(max_length=255, db_index=True)
     application = fields.ReferenceField(oauth2_settings.APPLICATION_MODEL, dbref=True)
     access_token = fields.ReferenceField(AccessToken, dbref=True)
